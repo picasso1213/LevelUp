@@ -327,6 +327,81 @@ footer{
     font-size: .85rem;
 }
 
+/*Página carrito.html*/
+.tabla-carrito{
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+.tabla-carrito th{
+    text-align: left;
+    font-family: 'Orbitron', sans-serif;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--accent-blue);
+    padding: .75rem .5rem;
+    border-bottom: 2px solid var(--border-subtle);
+}
+.tabla-carrito td{
+    padding: .75rem .5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+}
+.carrito-producto{
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-width: 220px;
+}
+.carrito-img{
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    background-color: var(--bg-elevated);
+    flex-shrink: 0;
+}
+.input-cantidad{
+    width: 70px;
+    text-align: center;
+}
+.carrito-subtotal{ font-weight: 700; white-space: nowrap; }
+.btn-eliminar{
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: 999px;
+    width: 32px; height: 32px;
+    line-height: 1;
+    cursor: pointer;
+}
+.btn-eliminar:hover{ background-color: var(--danger); color: #fff; }
+
+.carrito-resumen{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+}
+.carrito-total-box{
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    font-size: 1.1rem;
+}
+.carrito-total{
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.4rem;
+    color: var(--accent-green);
+}
+#carrito-vacio{ text-align: center; padding: 2rem 0; }
+
 /*confirmación añadido al carrito*/
 .toast-msg{
     position: fixed;
