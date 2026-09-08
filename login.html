@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level-Up Gamer cumple 2 años | Blog Level-Up Gamer</title>
-    <meta name="description" content="Repasamos cómo nació Level-Up Gamer y hacia dónde va la tienda.">
+    <title>Iniciar sesión | Level-Up Gamer</title>
+    <meta name="description" content="Inicia sesión en tu cuenta de Level-Up Gamer para ver tus pedidos y tu carrito.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,9 +38,9 @@
                         <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
                         <li class="nav-item"><a class="nav-link" href="productos.html">Productos</a></li>
                         <li class="nav-item"><a class="nav-link" href="nosotros.html">Nosotros</a></li>
-                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="blogs.html">Blogs</a></li>
+                        <li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>
                         <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
-                        <li class="nav-item"><a class="nav-link" href="login.html">Iniciar sesión</a></li>
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="login.html">Iniciar sesión</a></li>
                         <li class="nav-item">
                             <a class="nav-link cart-link" href="carrito.html">
                                 🛒 Carrito (<span id="cart-count">0</span>)
@@ -53,24 +53,42 @@
     </header>
 
     <main id="main">
-        <section class="panel">
+        <section id="login-section" class="panel">
             <div class="container">
-                <p class="blog-volver"><a href="blogs.html">← Volver a Blogs</a></p>
+                <div class="auth-wrapper">
 
-                <article class="blog-detalle">
-                    <h1>Level-Up Gamer cumple 2 años</h1>
-                    <p class="lead text-secondary">Cómo nació nuestra tienda y hacia dónde vamos.</p>
+                    <div class="auth-brand">
+                        <svg class="auth-brand-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="2" y="8" width="20" height="10" rx="5" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="7" cy="13" r="1.4" fill="currentColor"/>
+                            <circle cx="17" cy="12" r="1.2" fill="currentColor"/>
+                            <circle cx="19" cy="14" r="1.2" fill="currentColor"/>
+                        </svg>
+                        <h1 class="auth-brand-nombre">LEVEL-UP <span class="brand-accent">GAMER</span></h1>
+                    </div>
 
-                    <img src="images/53cdda35-f6ba-498e-ade6-75f859a921ad.png" width="800" height="500" alt="">
+                    <form id="formLogin" class="auth-card" novalidate action="#" method="post">
+                        <h2 class="auth-card-titulo">Inicio de sesión</h2>
 
-                
+                        <div class="mb-3">
+                            <label class="form-label" for="login-correo">Correo</label>
+                            <input class="form-control" type="email" id="login-correo" name="correo" autocomplete="email" maxlength="100" placeholder="tu@duoc.cl / @profesor.duoc.cl / @gmail.com" required aria-describedby="error-login-correo">
+                            <div id="error-login-correo" class="invalid-feedback"></div>
+                        </div>
 
-                    <p>Level-Up Gamer partió hace dos años, en plena pandemia, cuando la demanda de consolas, sillas y accesorios gamer creció más rápido que nunca en Chile. Sin una tienda física, apostamos por un modelo 100% online con despacho a todo el país, para que cualquier persona, desde Arica a Punta Arenas, pudiera equipar su setup sin salir de casa.</p>
+                        <div class="mb-3">
+                            <label class="form-label" for="login-password">Contraseña</label>
+                            <input class="form-control" type="password" id="login-password" name="password" autocomplete="current-password" minlength="4" maxlength="10" required aria-describedby="error-login-password">
+                            <div id="error-login-password" class="invalid-feedback"></div>
+                        </div>
 
-                    <p>En estos dos años fuimos sumando categorías: partimos con consolas y accesorios, y hoy ofrecemos también computadores gamers, sillas ergonómicas, mouse, mousepads y ropa personalizada para la comunidad. Además, lanzamos un descuento permanente del 20% para quienes se registran con su correo institucional Duoc, como forma de acercarnos a los futuros desarrolladores y diseñadores del país.</p>
+                        <button class="btn btn-accent-blue btn-login" type="submit">Iniciar sesión</button>
+                        <div id="login-success" class="form-success" role="status" aria-live="polite"></div>
 
-                    <p>De cara al futuro, seguimos trabajando en nuestro programa de fidelización <strong>LevelUp</strong>, que premia con puntos canjeables cada compra y cada referido, y en sumar más eventos gamer a lo largo de Chile donde nuestra comunidad pueda juntarse, competir y seguir subiendo de nivel.</p>
-                </article>
+                        <p class="auth-link">¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
+                    </form>
+
+                </div>
             </div>
         </section>
     </main>
@@ -93,6 +111,7 @@
                     <li><a href="index.html">Inicio</a></li>
                     <li><a href="productos.html">Productos</a></li>
                     <li><a href="nosotros.html">Nosotros</a></li>
+                    <li><a href="blog.html">Blog</a></li>
                     <li><a href="contacto.html">Contacto</a></li>
                 </ul>
             </div>
@@ -106,7 +125,7 @@
             </div>
 
             <div class="footer-col">
-                <p class="footer-title">nuevas noticias</p>
+                <p class="footer-title">Newsletter</p>
                 <p class="text-secondary">Novedades, ofertas y eventos gamer.</p>
                 <form id="formNewsletter" novalidate class="newsletter-form">
                     <label for="newsletter-email" class="visually-hidden">Correo electrónico</label>
@@ -120,8 +139,6 @@
         </div>
         <p class="footer-bottom">© 2026 Level-Up Gamer. Todos los derechos reservados.</p>
     </footer>
-
-    <div id="toast" class="toast-msg" role="status" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="js/main.js" defer></script>
