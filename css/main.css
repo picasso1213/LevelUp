@@ -846,3 +846,31 @@ footer{
     opacity: 1;
     transform: translateY(0);
 }
+
+.filtros-productos{
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: .75rem;
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+}
+
+.canje-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .75rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.canje-item:last-child{ border-bottom: none; }
+
+.estrella{ color: var(--border-subtle); font-size: 1.1rem; }
+.estrella.llena{ color: #ffb400; }
+.resenas-mini{ font-size: .9rem; margin: .25rem 0; }
+.resena-item{
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 1rem 0;
+}
+.resena-item:last-child{ border-bottom: none; }
+.resena-item-header{ display:flex; justify-content:space-between; align-items:center; }
+.resena-item-fecha{ font-size:.8rem; color: var(--text-secondary); }

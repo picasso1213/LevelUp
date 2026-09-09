@@ -56,11 +56,65 @@
         <section class="panel">
             <div class="container">
                 <h1>Productos</h1>
-                <p class="text-secondary">Todo nuestro catálogo, en un solo lugar.</p>
+<p class="text-secondary">Todo nuestro catálogo, en un solo lugar.</p>
 
-                <div class="productos-grid" id="productos-listado">
-                    <!-- Las tarjetas de producto se generan dinámicamente con js/main.js -->
-                </div>
+<form id="formFiltrosProductos" class="filtros-productos" novalidate>
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label" for="filtro-busqueda">Buscar</label>
+            <input type="search" class="form-control" id="filtro-busqueda" placeholder="Nombre del producto...">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label" for="filtro-categoria">Categoría</label>
+            <select class="form-select" id="filtro-categoria">
+                <option value="">Todas las categorías</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label" for="filtro-precio-min">Precio mín.</label>
+            <input type="number" class="form-control" id="filtro-precio-min" min="0" placeholder="$0">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label" for="filtro-precio-max">Precio máx.</label>
+            <input type="number" class="form-control" id="filtro-precio-max" min="0" placeholder="Sin límite">
+        </div>
+
+        <div class="col-md-1">
+            <button type="button" id="filtro-limpiar" class="btn btn-outline-accent w-100">Limpiar</button>
+        </div>
+    </div>
+
+    <div class="row g-3 align-items-center" style="margin-top:.25rem;">
+        <div class="col-md-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="filtro-stock">
+                <label class="form-check-label" for="filtro-stock">Solo con stock disponible</label>
+            </div>
+        </div>
+
+        <div class="col-md-4 offset-md-5">
+            <label class="form-label" for="filtro-orden">Ordenar por</label>
+            <select class="form-select" id="filtro-orden">
+                <option value="relevancia">Relevancia</option>
+                <option value="precio-asc">Precio: menor a mayor</option>
+                <option value="precio-desc">Precio: mayor a menor</option>
+                <option value="nombre-asc">Nombre: A-Z</option>
+                <option value="nombre-desc">Nombre: Z-A</option>
+            </select>
+        </div>
+    </div>
+</form>
+
+<p id="productos-contador" class="text-secondary" style="margin-top:1rem;"></p>
+
+<div class="productos-grid" id="productos-listado">
+    <!-- Las tarjetas de producto se generan dinámicamente con js/main.js -->
+</div>
+
+<p id="productos-sin-resultados" class="text-secondary" style="display:none;">No encontramos productos que coincidan con tu búsqueda. Prueba ajustando los filtros.</p>
             </div>
         </section>
     </main>

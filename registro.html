@@ -90,8 +90,10 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="reg-fecha-nacimiento">Fecha de nacimiento <span class="text-secondary">(opcional)</span></label>
-                            <input class="form-control" type="date" id="reg-fecha-nacimiento" name="fecha_nacimiento">
+                            <label class="form-label" for="reg-fecha-nacimiento">Fecha de nacimiento</label>
+                            <input class="form-control" type="date" id="reg-fecha-nacimiento" name="fecha_nacimiento" required aria-describedby="error-reg-fecha-nacimiento">
+                            <div id="error-reg-fecha-nacimiento" class="invalid-feedback"></div>
+                            <p class="text-secondary" style="font-size:.85rem; margin-top:.35rem;">Debes ser mayor de 18 años para registrarte. Si tu correo es @duoc.cl o @profesor.duoc.cl, obtienes 20% de descuento de por vida.</p>
                         </div>
 
                         <div class="row">
@@ -135,8 +137,22 @@
                             <div id="error-reg-direccion" class="invalid-feedback"></div>
                         </div>
 
+                         <div class="mb-3">
+                            <label class="form-label" for="reg-direccion">Dirección</label>
+                            <input class="form-control" type="text" id="reg-direccion" name="direccion" maxlength="300" required aria-describedby="error-reg-direccion">
+                            <div id="error-reg-direccion" class="invalid-feedback"></div>
+                        </div>
+
+                        <div id="registro-error" class="form-feedback error" role="alert" aria-live="assertive"></div>
                         <button class="btn btn-accent-blue btn-login" type="submit">Registrar</button>
                         <div id="registro-success" class="form-success" role="status" aria-live="polite"></div>
+
+                        <div class="mb-3">
+                          <label class="form-label" for="reg-codigo-referido">Código de referido <span class="text-secondary">(opcional)</span></label>
+                          <input class="form-control" type="text" id="reg-codigo-referido" name="codigo_referido" maxlength="20" placeholder="Ej: JP4F2K" aria-describedby="error-reg-codigo-referido">
+                          <div id="error-reg-codigo-referido" class="invalid-feedback"></div>
+                          <p class="text-secondary" style="font-size:.85rem; margin-top:.35rem;">Si un amigo te invitó, ingresa su código y ambos ganan puntos Level-Up.</p>
+                        </div>
 
                         <p class="auth-link">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
                     </form>

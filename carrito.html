@@ -81,12 +81,23 @@
                     </div>
 
                     <div class="carrito-resumen">
-                        <button type="button" id="btn-vaciar-carrito" class="btn btn-outline-accent">Vaciar carrito</button>
-                        <div class="carrito-total-box">
-                            <span>Total:</span>
-                            <span id="carrito-total" class="carrito-total">$0 CLP</span>
-                        </div>
-                        <button type="button" id="btn-pagar" class="btn btn-accent-green">Proceder al pago</button>
+                      <button type="button" id="btn-vaciar-carrito" class="btn btn-outline-accent">Vaciar carrito</button>
+
+                       <div class="carrito-total-box">
+                         <span>Subtotal:</span>
+                         <span id="carrito-subtotal" class="carrito-total">$0 CLP</span>
+                       </div>
+                       <div class="carrito-total-box" id="carrito-descuento-linea" style="display:none;">
+                         <span id="carrito-descuento-label">Descuento Duoc (20%):</span>
+                         <span id="carrito-descuento" class="carrito-total">-$0 CLP</span>
+                       </div>
+                       <div class="carrito-total-box">
+                         <span>Total:</span>
+                         <span id="carrito-total" class="carrito-total">$0 CLP</span>
+                       </div>
+                       <p id="carrito-puntos-preview" class="text-secondary" style="font-size:.85rem;"></p>
+
+                       <button type="button" id="btn-pagar" class="btn btn-accent-green">Proceder al pago</button>
                     </div>
                 </div>
             </div>
