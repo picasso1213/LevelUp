@@ -1,4 +1,4 @@
-﻿import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
@@ -13,6 +13,7 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx}'],
       exclude: ['src/main.jsx', 'src/test/**', 'src/**/*.test.{js,jsx}', 'src/data/**'],
       reporter: ['text', 'html'],
+      thresholds: { statements: 80, branches: 80, functions: 80, lines: 80 },
     },
   },
 })
