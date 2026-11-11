@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Enlace from '../atoms/Enlace.jsx'
 import { useNavegar } from '../../hooks/useNavegar.js'
-import { Form, Button, Row, Col } from 'react-bootstrap'
+import { Form, Button, Row, Col, Alert } from 'react-bootstrap'
 import CampoFormulario from '../atoms/CampoFormulario.jsx'
 import SelectorRegionComuna from '../molecules/SelectorRegionComuna.jsx'
 import { useSesion } from '../../context/SesionContext.jsx'
@@ -18,21 +18,29 @@ const VACIO = {
 function FormularioRegistro() {
   const [valores, setValores] = useState(VACIO)
   const [errores, setErrores] = useState({})
-  const { usuarios, registrar } = useSesion()
+  const [errorGeneral, setErrorGeneral] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const { registrar } = useSesion()
   const { mostrarToast } = useToast()
   const { irA } = useNavegar()
 
   const cambiar = (campo) => (e) => setValores({ ...valores, [campo]: e.target.value })
 
-  function enviar(e) {
+  async function enviar(e) {
     e.preventDefault()
-    const nuevos = validarRegistro(valores, usuarios)
+    setErrorGeneral('')
+    // Validación en el navegador (respuesta inmediata); el backend vuelve a validar y detecta correos repetidos
+    const nuevos = validarRegistro(valores)
     setErrores(nuevos)
     if (Object.keys(nuevos).length > 0) return
 
-    const resultado = registrar(valores, valores.codigoReferido)
+    setEnviando(true)
+    const resultado = await registrar(valores)
+    setEnviando(false)
     if (!resultado.ok) {
-      setErrores({ codigoReferido: resultado.error })
+      const camposServidor = resultado.campos || {}
+      if (Object.keys(camposServidor).length > 0) setErrores(camposServidor)
+      else setErrorGeneral(resultado.error)
       return
     }
 
@@ -46,6 +54,7 @@ function FormularioRegistro() {
 
   return (
     <Form className="auth-card" noValidate onSubmit={enviar}>
+      {errorGeneral && <Alert variant="danger" role="alert">{errorGeneral}</Alert>}
       <Row>
         <Col md={6}><CampoFormulario id="reg-nombre" label="Nombre" value={valores.nombre} onChange={cambiar('nombre')} error={errores.nombre} autoComplete="given-name" /></Col>
         <Col md={6}><CampoFormulario id="reg-apellidos" label="Apellidos" value={valores.apellidos} onChange={cambiar('apellidos')} error={errores.apellidos} autoComplete="family-name" /></Col>
@@ -82,7 +91,7 @@ function FormularioRegistro() {
         ayuda="Si un amigo te invitó, ingresa su código y ambos ganan puntos Level-Up."
         value={valores.codigoReferido} onChange={cambiar('codigoReferido')} error={errores.codigoReferido} />
 
-      <Button type="submit" variant="accent-blue" className="w-100">Crear cuenta</Button>
+      <Button type="submit" variant="accent-blue" className="w-100" disabled={enviando}>Crear cuenta</Button>
       <p className="auth-link mt-3">¿Ya tienes cuenta? <Enlace pagina="login">Inicia sesión</Enlace></p>
     </Form>
   )

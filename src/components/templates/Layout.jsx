@@ -19,6 +19,7 @@ function Layout() {
       <Encabezado
         cantidadCarrito={cantidadTotal}
         haySesion={Boolean(usuarioActual)}
+        rol={usuarioActual?.rol}
         onCerrarSesion={() => { cerrarSesion(); mostrarToast('Sesión cerrada'); navigate('/') }}
       />
       <main id="main"><Outlet /></main>

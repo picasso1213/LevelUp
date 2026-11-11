@@ -9,6 +9,7 @@ const RUTAS = {
   login: () => '/login',
   registro: () => '/registro',
   perfil: () => '/perfil',
+  panel: () => '/panel/productos',
   nosotros: () => '/nosotros',
   blog: () => '/blog',
   contacto: () => '/contacto',

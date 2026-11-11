@@ -29,7 +29,7 @@ function PanelFidelizacion({ usuario, onCopiar, onCanjear }) {
           Tu código: <strong>{usuario.codigoReferido}</strong>{' '}
           <Button type="button" variant="outline-accent" className="ms-2" onClick={() => onCopiar(usuario.codigoReferido)}>Copiar</Button>
         </p>
-        <p className="text-secondary mb-0">Amigos referidos: {(usuario.referidos || []).length}</p>
+        <p className="text-secondary mb-0">Amigos referidos: {usuario.cantidadReferidos ?? (usuario.referidos || []).length}</p>
       </div>
 
       <div className="auth-card mt-4">

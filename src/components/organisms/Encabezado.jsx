@@ -5,7 +5,7 @@ import { rutaDe } from '../../utils/rutas.js'
 // Organismo: barra de navegación responsiva (se colapsa en "hamburguesa" bajo el breakpoint lg).
 // Todo llega por props: cantidadCarrito, haySesion y la función onCerrarSesion (los eventos suben).
 // Los enlaces son <NavLink>: React Router marca solo cuál es la página activa.
-function Encabezado({ cantidadCarrito, haySesion, onCerrarSesion }) {
+function Encabezado({ cantidadCarrito, haySesion, rol, onCerrarSesion }) {
   // Enlace del menú: NavLink navega sin recargar y marca la página activa
   const item = (pagina, texto, extra = {}) => (
     <Nav.Link as={NavLink} to={rutaDe(pagina)} end={pagina === 'inicio'} {...extra}>
@@ -38,6 +38,8 @@ function Encabezado({ cantidadCarrito, haySesion, onCerrarSesion }) {
 
               {haySesion ? (
                 <>
+                  {/* Solo el personal ve el panel de gestión (el backend vuelve a validar el rol) */}
+                  {(rol === 'ADMIN' || rol === 'VENDEDOR') && item('panel', 'Panel')}
                   {item('perfil', 'Mi perfil')}
                   <Nav.Link as="button" type="button" className="nav-link-logout" onClick={onCerrarSesion}>
                     Cerrar sesión

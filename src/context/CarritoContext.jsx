@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useMemo } from 'react'
 import { useStorage } from '../hooks/useStorage.js'
-import { PRODUCTOS } from '../data/productos.js'
 import { agregarItem, cambiarCantidad, quitarItem, totalUnidades } from '../utils/carrito.js'
 import { useToast } from './ToastContext.jsx'
+import { useProductos } from './ProductosContext.jsx'
 
 const CarritoContext = createContext(null)
 
-export function CarritoProvider({ children, productos = PRODUCTOS }) {
+export function CarritoProvider({ children }) {
+  // El catálogo viene del backend (ProductosContext); aquí solo se guardan los ids y cantidades del carrito
+  const { productos } = useProductos()
   // Estado levantado: vive aquí y lo comparten Encabezado, tarjetas, detalle y página de carrito
   const [carrito, setCarrito] = useStorage('levelup_carrito', [])
   const { mostrarToast } = useToast()

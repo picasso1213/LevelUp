@@ -24,9 +24,9 @@ async function llenarFormulario(usuario, cambios = {}) {
 }
 
 describe('<Registro /> (formulario de registro)', () => {
-  it('enviar vacío muestra los errores de cada campo obligatorio', async () => {
+  it('enviar vacío muestra los errores de cada campo obligatorio y no llama al backend', async () => {
     const usuario = userEvent.setup()
-    abrirApp('/registro')
+    const { api } = abrirApp('/registro')
     await usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
     expect(screen.getByText('El nombre es obligatorio.')).toBeInTheDocument()
@@ -35,6 +35,7 @@ describe('<Registro /> (formulario de registro)', () => {
     expect(screen.getByText('Selecciona tu región.')).toBeInTheDocument()
     expect(screen.getByText('La dirección es obligatoria.')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Registro de usuario' })).toBeInTheDocument()
+    expect(api.estado.peticiones.some((p) => p.ruta === '/auth/register')).toBe(false)
   })
 
   it('la comuna empieza deshabilitada y se habilita al elegir la región', async () => {
@@ -48,17 +49,19 @@ describe('<Registro /> (formulario de registro)', () => {
     expect(screen.getByRole('option', { name: 'Viña del Mar' })).toBeInTheDocument()
   })
 
-  it('con datos válidos crea la cuenta, inicia sesión y lleva al perfil', async () => {
+  it('con datos válidos crea la cuenta en el backend, inicia sesión y lleva al perfil', async () => {
     const usuario = userEvent.setup()
-    abrirApp('/registro')
+    const { api } = abrirApp('/registro')
     await llenarFormulario(usuario)
     await usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    expect(screen.getByText('¡Cuenta creada con éxito!')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Mi perfil' })).toBeInTheDocument()
-    const guardados = JSON.parse(window.localStorage.getItem('levelup_usuarios'))
-    expect(guardados).toHaveLength(1)
-    expect(guardados[0].correo).toBe('luis@gmail.com')
+    expect(await screen.findByText('¡Cuenta creada con éxito!')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Mi perfil' })).toBeInTheDocument()
+    expect(api.estado.usuarios).toHaveLength(1)
+    expect(api.estado.usuarios[0].correo).toBe('luis@gmail.com')
+    expect(window.localStorage.getItem('levelup_token')).toBe('tok:luis@gmail.com')
+    // la confirmación de contraseña es solo del formulario: no viaja al servidor
+    expect(api.estado.peticiones.find((p) => p.ruta === '/auth/register').cuerpo).not.toHaveProperty('password2')
   })
 
   it('un correo institucional Duoc informa el 20 % de descuento', async () => {
@@ -66,36 +69,35 @@ describe('<Registro /> (formulario de registro)', () => {
     abrirApp('/registro')
     await llenarFormulario(usuario, { correo: 'luis@duoc.cl' })
     await usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }))
-    expect(screen.getByText(/20% de descuento de por vida/, { selector: '.toast-msg' })).toBeInTheDocument()
+    expect(await screen.findByText(/20% de descuento de por vida/, { selector: '.toast-msg' })).toBeInTheDocument()
   })
 
-  it('un código de referido inexistente muestra error y no crea la cuenta', async () => {
+  it('un código de referido inexistente muestra el error del servidor y no crea la cuenta', async () => {
     const usuario = userEvent.setup()
-    abrirApp('/registro')
+    const { api } = abrirApp('/registro')
     await llenarFormulario(usuario, { codigo: 'ZZZZZZ' })
     await usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    expect(screen.getByText('Ese código de referido no existe.')).toBeInTheDocument()
-    expect(window.localStorage.getItem('levelup_usuarios')).not.toContain('luis@gmail.com')
+    expect(await screen.findByText('Ese código de referido no existe.')).toBeInTheDocument()
+    expect(api.estado.usuarios).toHaveLength(0)
   })
 
   it('un código de referido válido da puntos al nuevo usuario y a quien lo invitó', async () => {
     const usuario = userEvent.setup()
-    abrirApp('/registro', { usuarios: [crearUsuario({ codigoReferido: 'AP1234' })] })
+    const { api } = abrirApp('/registro', { usuarios: [crearUsuario({ codigoReferido: 'AP1234' })] })
     await llenarFormulario(usuario, { codigo: 'ap1234' })
     await usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }))
 
-    expect(screen.getByText(/Ganaste 20 puntos Level-Up por usar un código de referido/)).toBeInTheDocument()
-    const guardados = JSON.parse(window.localStorage.getItem('levelup_usuarios'))
-    expect(guardados.find((u) => u.correo === 'ana@gmail.com').puntosLevelUp).toBe(50)
-    expect(guardados.find((u) => u.correo === 'luis@gmail.com').puntosLevelUp).toBe(20)
+    expect(await screen.findByText(/Ganaste 20 puntos Level-Up por usar un código de referido/)).toBeInTheDocument()
+    expect(api.estado.usuarios.find((u) => u.correo === 'ana@gmail.com').puntosLevelUp).toBe(50)
+    expect(api.estado.usuarios.find((u) => u.correo === 'luis@gmail.com').puntosLevelUp).toBe(20)
   })
 
-  it('rechaza un correo que ya está registrado', async () => {
+  it('rechaza un correo que ya está registrado (error 409 del servidor)', async () => {
     const usuario = userEvent.setup()
     abrirApp('/registro', { usuarios: [crearUsuario({ correo: 'luis@gmail.com' })] })
     await llenarFormulario(usuario)
     await usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }))
-    expect(screen.getByText('Ya existe una cuenta registrada con ese correo.')).toBeInTheDocument()
+    expect(await screen.findByText('Ya existe una cuenta registrada con ese correo.')).toBeInTheDocument()
   })
 })

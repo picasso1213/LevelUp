@@ -12,6 +12,7 @@
     "test:cobertura": "vitest run --coverage"
   },
   "dependencies": {
+    "axios": "^1.21.1",
     "bootstrap": "^5.3.8",
     "react": "^19.3.1",
     "react-bootstrap": "^2.10.10",

@@ -3,10 +3,11 @@ import { Form, Button } from 'react-bootstrap'
 import CampoFormulario from '../atoms/CampoFormulario.jsx'
 import SelectorRegionComuna from '../molecules/SelectorRegionComuna.jsx'
 import { categoriasDe } from '../../utils/productos.js'
-import { PRODUCTOS } from '../../data/productos.js'
+import { useProductos } from '../../context/ProductosContext.jsx'
 
 // Organismo: edición de datos de contacto. El estado inicial sale de las props (el usuario actual).
 function FormularioPerfil({ usuario, onGuardar }) {
+  const { productos } = useProductos() // las categorías salen del catálogo del backend
   const [telefono, setTelefono] = useState(usuario.telefono || '')
   const [direccion, setDireccion] = useState(usuario.direccion || '')
   const [ubicacion, setUbicacion] = useState({ region: usuario.region || '', comuna: usuario.comuna || '' })
@@ -32,7 +33,7 @@ function FormularioPerfil({ usuario, onGuardar }) {
 
       <fieldset className="mb-3">
         <legend className="form-label">Preferencias de compra</legend>
-        {categoriasDe(PRODUCTOS).map((cat) => (
+        {categoriasDe(productos).map((cat) => (
           <Form.Check key={cat} type="checkbox" id={`pref-${cat}`} label={cat}
             checked={preferencias.includes(cat)} onChange={() => alternar(cat)} />
         ))}

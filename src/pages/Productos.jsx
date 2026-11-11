@@ -3,13 +3,16 @@ import { useLocation } from 'react-router-dom'
 import { Container } from 'react-bootstrap'
 import FiltrosProductos from '../components/molecules/FiltrosProductos.jsx'
 import CatalogoProductos from '../components/organisms/CatalogoProductos.jsx'
+import EstadoCatalogo from '../components/molecules/EstadoCatalogo.jsx'
 import { useCarrito } from '../context/CarritoContext.jsx'
+import { useProductos } from '../context/ProductosContext.jsx'
 import { useResenas } from '../context/ResenasContext.jsx'
 import { useStorage } from '../hooks/useStorage.js'
 import { FILTROS_INICIALES, categoriasDe, filtrarProductos } from '../utils/productos.js'
 
 function Productos() {
   const { productos, agregar } = useCarrito()
+  const { cargando, error, recargar } = useProductos()
   const { resenas } = useResenas()
   // Los filtros se recuerdan en sessionStorage (mientras la pestaña siga abierta)
   const [filtros, setFiltros] = useStorage('levelup_filtros', FILTROS_INICIALES, 'session')
@@ -37,13 +40,17 @@ function Productos() {
           onLimpiar={() => setFiltros(FILTROS_INICIALES)}
         />
 
-        <p className="text-secondary mt-3" role="status">
-          {visibles.length === productos.length
-            ? `${visibles.length} producto(s) en el catálogo`
-            : `Mostrando ${visibles.length} de ${productos.length} productos`}
-        </p>
+        <EstadoCatalogo cargando={cargando} error={error} onReintentar={recargar} />
 
-        <CatalogoProductos productos={visibles} resenas={resenas} onAgregar={agregar} />
+        {!cargando && !error && (
+          <p className="text-secondary mt-3" role="status">
+            {visibles.length === productos.length
+              ? `${visibles.length} producto(s) en el catálogo`
+              : `Mostrando ${visibles.length} de ${productos.length} productos`}
+          </p>
+        )}
+
+        {!cargando && !error && <CatalogoProductos productos={visibles} resenas={resenas} onAgregar={agregar} />}
       </Container>
     </section>
   )

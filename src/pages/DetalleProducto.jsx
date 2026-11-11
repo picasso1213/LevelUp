@@ -5,17 +5,28 @@ import { Container, Row, Col, Button, Form, Alert } from 'react-bootstrap'
 import Precio from '../components/atoms/Precio.jsx'
 import CatalogoProductos from '../components/organisms/CatalogoProductos.jsx'
 import ResenasProducto from '../components/organisms/ResenasProducto.jsx'
+import EstadoCatalogo from '../components/molecules/EstadoCatalogo.jsx'
 import { useCarrito } from '../context/CarritoContext.jsx'
+import { useProductos } from '../context/ProductosContext.jsx'
 import { useResenas } from '../context/ResenasContext.jsx'
 
 function DetalleProducto() {
   const { id } = useParams() // useParams: lee :id de /productos/:id
   const { productos, agregar } = useCarrito()
+  const { cargando, error, recargar } = useProductos()
   const { resenas } = useResenas()
   const [cantidad, setCantidad] = useState(1)
 
   const producto = productos.find((p) => p.id === Number(id))
 
+  // Mientras llega el catálogo (o si falló) no se puede decir que el producto no existe
+  if (!producto && (cargando || error)) {
+    return (
+      <Container className="panel">
+        <EstadoCatalogo cargando={cargando} error={error} onReintentar={recargar} />
+      </Container>
+    )
+  }
   if (!producto) {
     return (
       <Container className="panel">

@@ -1,12 +1,15 @@
 import { Container, Row, Col } from 'react-bootstrap'
 import EnlaceBoton from '../components/atoms/EnlaceBoton.jsx'
 import CatalogoProductos from '../components/organisms/CatalogoProductos.jsx'
+import EstadoCatalogo from '../components/molecules/EstadoCatalogo.jsx'
 import { useCarrito } from '../context/CarritoContext.jsx'
+import { useProductos } from '../context/ProductosContext.jsx'
 import { useResenas } from '../context/ResenasContext.jsx'
 import { categoriasDe } from '../utils/productos.js'
 
 function Inicio() {
   const { productos, agregar } = useCarrito()
+  const { cargando, error, recargar } = useProductos()
   const { resenas } = useResenas()
 
   return (
@@ -62,7 +65,8 @@ function Inicio() {
       <section className="panel">
         <Container>
           <h2>Productos destacados</h2>
-          <CatalogoProductos productos={productos} resenas={resenas} onAgregar={agregar} />
+          <EstadoCatalogo cargando={cargando} error={error} onReintentar={recargar} />
+          {!cargando && !error && <CatalogoProductos productos={productos} resenas={resenas} onAgregar={agregar} />}
         </Container>
       </section>
     </>

@@ -22,9 +22,14 @@ function Perfil() {
     }
   }
 
-  function canjearPuntos(id) {
-    const canje = canjear(id)
-    if (canje) mostrarToast(`¡Canjeaste "${canje.nombre}"!`)
+  async function canjearPuntos(id) {
+    const canje = await canjear(id)
+    mostrarToast(canje ? `¡Canjeaste "${canje.nombre}"!` : 'No se pudo realizar el canje')
+  }
+
+  async function guardar(cambios) {
+    const resultado = await actualizarPerfil(cambios)
+    mostrarToast(resultado.ok ? 'Perfil actualizado' : resultado.error)
   }
 
   return (
@@ -43,7 +48,7 @@ function Perfil() {
         <FormularioPerfil
           key={usuario.correo}
           usuario={usuario}
-          onGuardar={(cambios) => { actualizarPerfil(cambios); mostrarToast('Perfil actualizado') }}
+          onGuardar={guardar}
         />
 
         <Button type="button" variant="outline-accent" className="mt-3" onClick={() => { cerrarSesion(); irA('inicio') }}>Cerrar sesión</Button>

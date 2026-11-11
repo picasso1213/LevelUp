@@ -1,114 +1,123 @@
-import { createContext, useCallback, useContext, useMemo } from 'react'
-import { useStorage } from '../hooks/useStorage.js'
-import { CANJES_LEVELUP, PUNTOS_BONUS_REFERIDO_NUEVO, PUNTOS_POR_REFERIDO } from '../data/fidelizacion.js'
-import { esCorreoDuoc } from '../utils/validaciones.js'
-import { generarCodigoReferido } from '../utils/fidelizacion.js'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { guardarToken, obtenerToken } from '../services/api.js'
+import { login, registrarUsuario } from '../services/auth.js'
+import { actualizarMiPerfil, canjearPuntos, obtenerMiPerfil } from '../services/usuarios.js'
+import { crearBoleta, listarMisCompras } from '../services/boletas.js'
 
 const SesionContext = createContext(null)
 
-// Usuarios y sesión persistidos en localStorage (no hay backend)
+// Boleta del backend -> pedido con el formato que usan las reseñas: { productos: [{ id, cantidad }], total, fecha }
+const aPedido = (boleta) => ({
+  productos: boleta.detalles.map((d) => ({ id: d.productoId, cantidad: d.cantidad })),
+  total: boleta.total,
+  fecha: boleta.fecha,
+})
+
+// La sesión vive en el backend: aquí solo se guarda el JWT (localStorage) y el usuario que devuelve la API.
+// Las funciones que llaman al servidor son async y devuelven { ok, ... } para que los formularios muestren el error.
 export function SesionProvider({ children }) {
-  const [usuarios, setUsuarios] = useStorage('levelup_usuarios', [])
-  const [sesion, setSesion] = useStorage('levelup_sesion', null)
+  const [usuarioBase, setUsuarioActual] = useState(null)
+  const [historial, setHistorial] = useState([]) // compras del usuario (para saber quién puede reseñar)
+  // true mientras se valida el token guardado: evita mandar a /login al recargar una página protegida
+  const [cargandoSesion, setCargandoSesion] = useState(() => Boolean(obtenerToken()))
 
-  const usuarioActual = useMemo(
-    () => (sesion ? usuarios.find((u) => u.correo === sesion.correo) || null : null),
-    [sesion, usuarios],
-  )
-
-  // Crea la cuenta (los datos ya vienen validados). Devuelve { ok, error?, usuario?, referente? }
-  const registrar = useCallback((datos, codigoReferido = '') => {
-    const codigo = codigoReferido.trim().toUpperCase()
-    const referente = codigo ? usuarios.find((u) => u.codigoReferido === codigo) : null
-    if (codigo && !referente) return { ok: false, error: 'Ese código de referido no existe.' }
-
-    const esDuoc = esCorreoDuoc(datos.correo)
-    const nuevo = {
-      nombre: datos.nombre.trim(),
-      apellidos: datos.apellidos.trim(),
-      run: datos.run.trim().toUpperCase(),
-      correo: datos.correo.trim(),
-      password: datos.password,
-      fechaNacimiento: datos.fechaNacimiento,
-      telefono: (datos.telefono || '').trim(),
-      region: datos.region,
-      comuna: datos.comuna,
-      direccion: datos.direccion.trim(),
-      esDuoc,
-      descuento: esDuoc ? 20 : 0,
-      preferencias: [],
-      codigoReferido: generarCodigoReferido(datos.nombre.trim(), datos.apellidos.trim()),
-      referidoPor: referente ? referente.correo : null,
-      referidos: [],
-      puntosLevelUp: referente ? PUNTOS_BONUS_REFERIDO_NUEVO : 0,
-      canjes: [],
-      historialCompras: [],
-      fechaRegistro: new Date().toISOString(),
+  useEffect(() => {
+    if (!obtenerToken()) return undefined
+    let activo = true
+    obtenerMiPerfil()
+      .then((usuario) => {
+        if (activo) setUsuarioActual(usuario)
+      })
+      .catch((e) => {
+        // token vencido o usuario borrado: se descarta. Si solo falló la red, se conserva para reintentar luego.
+        if ([401, 403, 404].includes(e.status)) guardarToken(null)
+      })
+      .finally(() => {
+        if (activo) setCargandoSesion(false)
+      })
+    return () => {
+      activo = false
     }
+  }, [])
 
-    // Se crea un arreglo nuevo (sin mutar el anterior)
-    setUsuarios((actual) => [
-      ...actual.map((u) =>
-        referente && u.correo === referente.correo
-          ? { ...u, puntosLevelUp: u.puntosLevelUp + PUNTOS_POR_REFERIDO, referidos: [...(u.referidos || []), nuevo.correo] }
-          : u,
-      ),
-      nuevo,
-    ])
-    setSesion({ correo: nuevo.correo })
-    return { ok: true, usuario: nuevo, referente }
-  }, [usuarios, setUsuarios, setSesion])
+  // Al haber sesión, trae las compras del usuario (GET /boletas/mis-compras)
+  const idUsuario = usuarioBase?.id
+  useEffect(() => {
+    if (!idUsuario) return undefined
+    let activo = true
+    listarMisCompras()
+      .then((boletas) => {
+        if (activo) setHistorial(boletas.map(aPedido))
+      })
+      .catch(() => {}) // sin historial solo se oculta el formulario de reseñas
+    return () => {
+      activo = false
+    }
+  }, [idUsuario])
 
-  const iniciarSesion = useCallback((correo, password) => {
-    const usuario = usuarios.find(
-      (u) => u.correo.toLowerCase() === correo.trim().toLowerCase() && u.password === password,
-    )
-    if (!usuario) return false
-    setSesion({ correo: usuario.correo })
-    return true
-  }, [usuarios, setSesion])
+  // Usuario de la sesión + su historial de compras
+  const usuarioActual = usuarioBase ? { ...usuarioBase, historialCompras: historial } : null
 
-  const cerrarSesion = useCallback(() => setSesion(null), [setSesion])
+  // Crea la cuenta en el backend. Devuelve { ok, usuario?, referente?, error?, campos? }
+  const registrar = useCallback(async (datos) => {
+    try {
+      const respuesta = await registrarUsuario(datos)
+      guardarToken(respuesta.token)
+      setUsuarioActual(respuesta.usuario)
+      return { ok: true, usuario: respuesta.usuario, referente: respuesta.conReferido }
+    } catch (e) {
+      return { ok: false, error: e.message, campos: e.campos || {} }
+    }
+  }, [])
 
-  const actualizarPerfil = useCallback((cambios) => {
-    if (!sesion) return
-    setUsuarios((actual) => actual.map((u) => (u.correo === sesion.correo ? { ...u, ...cambios } : u)))
-  }, [sesion, setUsuarios])
+  // Devuelve { ok, usuario? , error? }
+  const iniciarSesion = useCallback(async (correo, password) => {
+    try {
+      const respuesta = await login(correo, password)
+      guardarToken(respuesta.token)
+      setUsuarioActual(respuesta.usuario)
+      return { ok: true, usuario: respuesta.usuario }
+    } catch (e) {
+      return { ok: false, error: e.message }
+    }
+  }, [])
 
-  // Descuenta puntos y registra el canje. Devuelve el canje o null si no alcanzan los puntos.
-  const canjear = useCallback((idCanje) => {
-    const canje = CANJES_LEVELUP.find((c) => c.id === idCanje)
-    if (!canje || !usuarioActual || usuarioActual.puntosLevelUp < canje.costo) return null
-    setUsuarios((actual) => actual.map((u) =>
-      u.correo === usuarioActual.correo
-        ? {
-            ...u,
-            puntosLevelUp: u.puntosLevelUp - canje.costo,
-            canjes: [...(u.canjes || []), { id: canje.id, nombre: canje.nombre, fecha: new Date().toISOString() }],
-          }
-        : u,
-    ))
-    return canje
-  }, [usuarioActual, setUsuarios])
+  const cerrarSesion = useCallback(() => {
+    guardarToken(null)
+    setUsuarioActual(null)
+    setHistorial([])
+  }, [])
 
-  // Registra la compra en el historial y suma los puntos ganados
-  const registrarCompra = useCallback((lineas, total, puntos) => {
-    if (!usuarioActual) return
-    setUsuarios((actual) => actual.map((u) =>
-      u.correo === usuarioActual.correo
-        ? {
-            ...u,
-            puntosLevelUp: u.puntosLevelUp + puntos,
-            historialCompras: [
-              ...(u.historialCompras || []),
-              { productos: lineas.map((l) => ({ id: l.id, cantidad: l.cantidad })), total, fecha: new Date().toISOString() },
-            ],
-          }
-        : u,
-    ))
-  }, [usuarioActual, setUsuarios])
+  // Guarda los datos de contacto en el backend. Devuelve { ok, error? }
+  const actualizarPerfil = useCallback(async (cambios) => {
+    try {
+      setUsuarioActual(await actualizarMiPerfil(cambios))
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: e.message }
+    }
+  }, [])
 
-  const valor = { usuarios, usuarioActual, registrar, iniciarSesion, cerrarSesion, actualizarPerfil, canjear, registrarCompra }
+  // El backend descuenta los puntos. Devuelve el canje o null si no alcanzan los puntos / falla.
+  const canjear = useCallback(async (idCanje) => {
+    try {
+      const respuesta = await canjearPuntos(idCanje)
+      setUsuarioActual(respuesta.usuario)
+      return respuesta.canje
+    } catch {
+      return null
+    }
+  }, [])
+
+  // Crea la boleta (el servidor calcula totales, descuenta stock y suma puntos). Lanza ApiError si falla.
+  const registrarCompra = useCallback(async (lineas) => {
+    const boleta = await crearBoleta(lineas)
+    setUsuarioActual((u) => (u ? { ...u, puntosLevelUp: u.puntosLevelUp + boleta.puntosGanados } : u))
+    setHistorial((h) => [aPedido(boleta), ...h])
+    return boleta
+  }, [])
+
+  const valor = { usuarioActual, cargandoSesion, registrar, iniciarSesion, cerrarSesion, actualizarPerfil, canjear, registrarCompra }
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>
 }
 
