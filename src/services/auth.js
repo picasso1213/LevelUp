@@ -23,3 +23,11 @@ export async function registrarUsuario(datos) {
   const respuesta = await api.post('/auth/register', cuerpo, { autenticada: false })
   return respuesta.data
 }
+
+// POST /auth/refresh -> { token, usuario }
+// Cambia el token que aún no vence (se envía en el encabezado Authorization) por uno nuevo.
+// Un token ya vencido no se puede renovar: el servidor responde 401 y hay que iniciar sesión otra vez.
+export async function renovarToken() {
+  const respuesta = await api.post('/auth/refresh')
+  return respuesta.data
+}

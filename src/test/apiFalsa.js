@@ -19,6 +19,12 @@ const CATEGORIAS = [...new Set(PRODUCTOS.map((p) => p.categoria))]
 export const productosApi = () =>
   PRODUCTOS.map((p) => ({ ...p, categoriaId: CATEGORIAS.indexOf(p.categoria) + 1 }))
 
+// JWT de mentira (la firma no se valida): { sub: correo, exp: segundos desde 1970 }. Sirve para probar la renovación.
+const base64url = (obj) => btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+export const crearJwt = (correo, vencePorMs = 2 * 60 * 60 * 1000) =>
+  `${base64url({ alg: 'HS256', typ: 'JWT' })}.${base64url({ sub: correo, exp: Math.floor((Date.now() + vencePorMs) / 1000) })}.firma`
+const payloadDe = (token) => JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+
 const json = (cuerpo, status = 200) =>
   new Response(JSON.stringify(cuerpo), { status, headers: { 'Content-Type': 'application/json' } })
 const error = (status, mensaje, campos) => json({ status, error: mensaje, ...(campos ? { campos } : {}) }, status)
@@ -34,7 +40,7 @@ export function crearApiFalsa({ productos = productosApi(), usuarios = [], bolet
   const estado = { productos, usuarios, boletas, peticiones: [] }
 
   const usuarioDe = (token) => {
-    const correo = token?.replace('tok:', '')
+    const correo = token?.split('.').length === 3 ? payloadDe(token).sub : token?.replace('tok:', '')
     return estado.usuarios.find((u) => u.correo.toLowerCase() === correo?.toLowerCase())
   }
 
@@ -80,6 +86,12 @@ export function crearApiFalsa({ productos = productosApi(), usuarios = [], bolet
       const u = estado.usuarios.find((x) => x.correo.toLowerCase() === cuerpo.correo.toLowerCase())
       if (!u || u.password !== cuerpo.password) return error(401, 'Correo o contraseña incorrectos.')
       return json({ token: `tok:${u.correo}`, usuario: dto(u, estado), conReferido: false })
+    }
+    if (metodo === 'POST' && ruta === '/auth/refresh') {
+      const sinSesion = exigirSesion()
+      if (sinSesion) return sinSesion
+      if (token.split('.').length === 3 && payloadDe(token).exp * 1000 <= Date.now()) return error(401, 'Tu sesión expiró. Inicia sesión de nuevo.')
+      return json({ token: crearJwt(yo.correo), usuario: dto(yo, estado), conReferido: false })
     }
     if (metodo === 'POST' && ruta === '/auth/register') {
       if (estado.usuarios.some((u) => u.correo.toLowerCase() === cuerpo.correo.toLowerCase())) {
